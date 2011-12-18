@@ -51,6 +51,13 @@ describe Mongoid::Extensions::TimeConversions do
             Time.set('2010-9-19 5:00:00').should == Time.utc(2010, 9, 19, 3)
           end
         end
+
+        context  "when overridden to skip using the ActiveSupport time zone" do
+          it "returns as utc" do
+            time = Mongoid::Extensions::TimeConversions.tag_with_skip_time_zone_conversion('2010-11-19 5:00:00')
+            Time.set(time).should == Time.utc(2010, 11, 19, 5)
+          end
+        end
       end
     end
 
@@ -73,6 +80,15 @@ describe Mongoid::Extensions::TimeConversions do
 
         it "assumes the given time is local" do
           Time.set(@datetime).should == Time.utc(2010, 11, 18, 23)
+        end
+
+        context "when overridden to skip using the ActiveSupport time zone" do
+          it "returns as utc" do
+            datetime = DateTime.new(2010, 11, 19, 14)
+            time = Mongoid::Extensions::TimeConversions.
+              tag_with_skip_time_zone_conversion(datetime)
+            Time.set(time).should == Time.utc(2010, 11, 19, 14)
+          end
         end
       end
     end
@@ -126,6 +142,15 @@ describe Mongoid::Extensions::TimeConversions do
         it "assumes the given time is local" do
           Time.set(@date).should == Time.utc(2010, 11, 18, 23)
         end
+
+        context "when overridden to skip using the ActiveSupport time zone" do
+          it "returns as utc" do
+            date = Date.new(2010, 11, 19)
+            time = Mongoid::Extensions::TimeConversions.
+              tag_with_skip_time_zone_conversion(date)
+            Time.set(time).should == Time.utc(2010, 11, 19)
+          end
+        end
       end
     end
 
@@ -149,6 +174,13 @@ describe Mongoid::Extensions::TimeConversions do
 
         it "assumes the given time is local" do
           Time.set(@array).should == Time.utc(2010, 11, 18, 23, 24, 49)
+        end
+
+        context  "when overridden to skip using the ActiveSupport time zone" do
+          it "returns as utc" do
+            time = Mongoid::Extensions::TimeConversions.tag_with_skip_time_zone_conversion(@array)
+            Time.set(time).should == Time.utc(2010, 11, 19, 00, 24, 49)
+          end
         end
       end
     end

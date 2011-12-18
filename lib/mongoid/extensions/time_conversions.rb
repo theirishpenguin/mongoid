@@ -3,7 +3,12 @@ module Mongoid #:nodoc:
     module TimeConversions #:nodoc:
       def set(value)
         return nil if value.blank?
-        time = convert_to_time(value)
+        time = nil
+        if value_demands_to_use_utc?(value)
+          time = convert_to_utc_time_ignoring(value)
+        else
+          time = convert_to_time(value)
+        end
         strip_milliseconds(time).utc
       end
 
@@ -15,6 +20,16 @@ module Mongoid #:nodoc:
           value = value.in_time_zone(time_zone)
         end
         value
+      end
+
+      def self.tag_with_skip_time_zone_conversion(value)
+        def value.skip_time_zone_conversion; true; end
+        value
+      end
+
+      def self.copy_time_without_offset(tz_time)
+        ::Time.utc(tz_time.year, tz_time.month, tz_time.day,
+          tz_time.hour, tz_time.min,  tz_time.sec)
       end
 
       protected
@@ -32,6 +47,29 @@ module Mongoid #:nodoc:
           when ::Array then time.local(*value)
           else value
         end
+      end
+
+      def convert_to_utc_time_ignoring(value)
+        #require 'ruby-debug' ; debugger
+
+        case value
+          when ::String
+            Mongoid::Extensions::TimeConversions.
+              copy_time_without_offset(::Time.parse(value))
+          when ::DateTime
+            Mongoid::Extensions::TimeConversions.
+              copy_time_without_offset(value)
+          when ::Date
+            ::Time.utc(value.year, value.month, value.day)
+          when ::Array
+            ::Time.utc(*value)
+          else value
+        end
+      end
+
+      def value_demands_to_use_utc?(value)
+         value.respond_to? :skip_time_zone_conversion and
+             value.skip_time_zone_conversion
       end
     end
   end

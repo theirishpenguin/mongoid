@@ -129,6 +129,7 @@ module Mongoid #:nodoc:
     # there is any.
     def write_attribute(name, value)
       access = name.to_s
+      #require 'ruby-debug' ; debugger
       modify(access, @attributes[access], typed_value_for(access, value))
       notify if !id.blank? && new_record?
     end
@@ -161,7 +162,18 @@ module Mongoid #:nodoc:
 
     # Return the typecast value for a field.
     def typed_value_for(key, value)
-      fields.has_key?(key) ? fields[key].set(value) : value
+#   require 'ruby-debug' ; debugger
+     return value unless fields.has_key?(key)
+
+     tag_with_skip_time_zone_conversion(value) if
+       attribute_skips_time_zone_conversion?(key)
+
+     fields[key].set(value)
+    end
+
+    def attribute_skips_time_zone_conversion?(key)
+     (self.class.respond_to? :skip_time_zone_conversion_for_attributes and
+        self.class.skip_time_zone_conversion_for_attributes.include?(key.to_sym))
     end
 
     # apply default values to attributes - calling procs as required

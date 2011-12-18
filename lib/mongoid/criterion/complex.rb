@@ -16,6 +16,20 @@ module Mongoid #:nodoc:
       def initialize(opts = {})
         @key, @operator = opts[:key], opts[:operator]
       end
+
+      # DMG: Note these are not my changes
+      def hash
+        [@key, @operator].hash
+      end
+
+      def eql?(other)
+        self == (other)
+      end
+
+      def ==(other)
+        return false unless other.is_a?(self.class)
+        self.key == other.key && self.operator == other.operator
+      end
     end
   end
 end
