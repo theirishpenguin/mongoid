@@ -251,6 +251,20 @@ describe Mongoid::Extensions::TimeConversions do
             Time.get(@time).should == Time.zone.local(2010, 11, 19, 1, 30)
           end
         end
+
+        context "when overridden to skip using the ActiveSupport time zone" do
+          before do
+            untagged_time = Time.utc(2010, 11, 19, 0, 30)
+            @time = Mongoid::Extensions::TimeConversions.
+              tag_with_skip_time_zone_conversion(untagged_time)
+          end
+          it "returns as utc" do
+            Time.get(@time).should == Time.utc(2010, 11, 19, 0, 30)
+          end
+          it "returns a Time" do
+            Time.get(@time).class.should == ::Time
+          end
+        end
       end
     end
 
@@ -279,6 +293,19 @@ describe Mongoid::Extensions::TimeConversions do
 
         it "returns an ActiveSupport::TimeWithZone" do
           Time.get(@time).class.should == ActiveSupport::TimeWithZone
+        end
+
+        context "when overridden to skip using the ActiveSupport time zone" do
+          before do
+            @time = Mongoid::Extensions::TimeConversions.
+              tag_with_skip_time_zone_conversion(@time)
+          end
+          it "returns as utc" do
+            Time.get(@time).should == Time.utc(2010, 11, 19, 0, 30)
+          end
+          it "returns a Time" do
+            Time.get(@time).class.should == ::Time
+          end
         end
       end
     end

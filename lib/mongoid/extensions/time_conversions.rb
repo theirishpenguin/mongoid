@@ -14,10 +14,14 @@ module Mongoid #:nodoc:
 
       def get(value)
         return nil if value.blank?
-        value = value.getlocal unless Mongoid::Config.instance.use_utc?
-        if Mongoid::Config.instance.use_activesupport_time_zone?
-          time_zone = Mongoid::Config.instance.use_utc? ? 'UTC' : Time.zone
-          value = value.in_time_zone(time_zone)
+        if value_demands_to_use_utc?(value)
+          value = value.utc
+        else
+          value = value.getlocal unless Mongoid::Config.instance.use_utc?
+          if Mongoid::Config.instance.use_activesupport_time_zone?
+            time_zone = Mongoid::Config.instance.use_utc? ? 'UTC' : Time.zone
+            value = value.in_time_zone(time_zone)
+          end
         end
         value
       end
